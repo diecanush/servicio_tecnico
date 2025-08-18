@@ -5,6 +5,8 @@ import ClientesPanel from '../components/ClientesPanel';
 import OficinasPanel from '../components/OficinasPanel';
 import DispositivosPanel from '../components/DispositivosPanel';
 import ServiciosPanel from '../components/ServiciosPanel';
+import UsuariosPanel from '../components/UsuariosPanel';
+
 
 export default function Panel() {
   const { usuario, logout } = useContext(AuthContext);
@@ -30,6 +32,7 @@ export default function Panel() {
         <button onClick={() => setVista('oficinas')}>Oficinas</button>{' '}
         <button onClick={() => setVista('dispositivos')}>Dispositivos</button>{' '}
         <button onClick={() => setVista('servicios')}>Servicios</button>{' '}
+        <button onClick={() => setVista('usuarios')}>Usuarios</button>{' '}
         {/* BOTON PARA CERRAR SESION */}
         <button onClick={cerrarSesion}>Cerrar sesión</button>
       </div>
@@ -39,6 +42,7 @@ export default function Panel() {
       {vista === 'oficinas' && <OficinasPanel />}
       {vista === 'dispositivos' && <DispositivosPanel />}
       {vista === 'servicios' && <ServiciosPanel />}
+      {vista === 'usuarios' && <UsuariosPanel />}
     </div>
   );
 }
