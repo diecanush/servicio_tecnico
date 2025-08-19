@@ -11,14 +11,15 @@ exports.listarUsuarios = (req, res) => {
 };
 
 exports.crearUsuario = async (req, res) => {
-  const { nombre, email, contraseña, rol } = req.body;
+  const { nombre, email, rol, contraseña, contrasena } = req.body;
+  const pass = contraseña || contrasena;
 
-  if (!nombre || !email || !contraseña || !rol) {
+  if (!nombre || !email || !pass || !rol) {
     return res.status(400).json({ error: 'Faltan datos obligatorios' });
   }
 
   try {
-    const contraseñaHasheada = await bcrypt.hash(contraseña, 10);
+    const contraseñaHasheada = await bcrypt.hash(pass, 10);
 
     const sql = 'INSERT INTO usuarios (nombre, email, contraseña, rol) VALUES (?, ?, ?, ?)';
     db.query(sql, [nombre, email, contraseñaHasheada, rol], (err, resultado) => {
