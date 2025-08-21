@@ -32,13 +32,17 @@ export default function FormularioUsuario({ usuarioInicial, onGuardar, onCancela
   useEffect(() => {
     if (usuarioInicial) {
       const { nombre, email, rol } = usuarioInicial;
-      setForm({ nombre, email, rol });
+      setForm({ nombre, email, rol, password: '' });
     }
   }, [usuarioInicial]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onGuardar(form);
+    const data = { ...form };
+    if (!data.password) {
+      delete data.password;
+    }
+    onGuardar(data);
   };
 
   return (
@@ -69,15 +73,24 @@ export default function FormularioUsuario({ usuarioInicial, onGuardar, onCancela
             <option value="tecnico">Técnico</option>
             <option value="cliente">Cliente</option>
           </select><br />
-          {!usuarioInicial && (
+          {usuarioInicial ? (
             <>
-            <input
-              type="password"
-              placeholder="Contraseña"
-              value={form.password || ''}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              required
-            /><br />
+              <input
+                type="password"
+                placeholder="Nueva contraseña (opcional)"
+                value={form.password || ''}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+              /><br />
+            </>
+          ) : (
+            <>
+              <input
+                type="password"
+                placeholder="Contraseña"
+                value={form.password || ''}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                required
+              /><br />
             </>
           )}
           <br />
