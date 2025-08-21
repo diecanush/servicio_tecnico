@@ -55,3 +55,22 @@ exports.eliminarUsuario = (req, res) => {
     res.json({ mensaje: 'Usuario eliminado correctamente' });
   });
 };
+
+exports.blanquearContraseña = async (req, res) => {
+  const { id } = req.params;
+
+  const contraseñaTemporal = Math.random().toString(36).slice(-8);
+
+  try {
+    const contraseñaHasheada = await bcrypt.hash(contraseñaTemporal, 10);
+    const sql = 'UPDATE usuarios SET contraseña = ? WHERE id_usuario = ?';
+    db.query(sql, [contraseñaHasheada, id], (err) => {
+      if (err) {
+        return res.status(500).json({ error: 'Error al actualizar contraseña' });
+      }
+      res.json({ contraseñaTemporal });
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al blanquear contraseña' });
+  }
+};
