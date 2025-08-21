@@ -55,3 +55,34 @@ exports.eliminarUsuario = (req, res) => {
     res.json({ mensaje: 'Usuario eliminado correctamente' });
   });
 };
+
+exports.cambiarContraseña = (req, res) => {
+  const { contraseñaActual, nuevaContraseña } = req.body;
+  const userId = req.usuario.id;
+
+  if (!contraseñaActual || !nuevaContraseña) {
+    return res.status(400).json({ error: 'Faltan datos obligatorios' });
+  }
+
+  const sql = 'SELECT contraseña FROM usuarios WHERE id_usuario = ?';
+  db.query(sql, [userId], async (err, resultados) => {
+    if (err) return res.status(500).json({ error: 'Error en la base de datos' });
+    if (resultados.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    const coincide = await bcrypt.compare(contraseñaActual, resultados[0].contraseña);
+    if (!coincide) {
+      return res.status(401).json({ error: 'Contraseña actual incorrecta' });
+    }
+
+    try {
+      const nuevaHash = await bcrypt.hash(nuevaContraseña, 10);
+      const updateSql = 'UPDATE usuarios SET contraseña = ? WHERE id_usuario = ?';
+      db.query(updateSql, [nuevaHash, userId], (err) => {
+        if (err) return res.status(500).json({ error: 'Error al actualizar contraseña' });
+        res.json({ mensaje: 'Contraseña actualizada correctamente' });
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Error al hashear contraseña' });
+    }
+  });
+};
