@@ -9,5 +9,7 @@ router.post('/', authMiddleware, roleMiddleware('admin'), usuariosController.cre
 router.put('/:id', authMiddleware, roleMiddleware('admin'), usuariosController.modificarUsuario);
 router.put('/:id/password', authMiddleware, roleMiddleware('admin'), usuariosController.blanquearContraseña);
 router.delete('/:id', authMiddleware, roleMiddleware('admin'), usuariosController.eliminarUsuario);
+router.put('/password', authMiddleware, usuariosController.cambiarContraseña);
+
 
 module.exports = router;
