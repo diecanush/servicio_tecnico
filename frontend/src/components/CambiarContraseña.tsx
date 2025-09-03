@@ -10,6 +10,7 @@ export default function CambiarContraseña() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log(contraseñaActual,nuevaContraseña);
     try {
       await axios.put(
         'http://localhost:3000/usuarios/password',
