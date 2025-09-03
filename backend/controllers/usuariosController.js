@@ -56,6 +56,7 @@ exports.eliminarUsuario = (req, res) => {
   });
 };
 
+
 exports.blanquearContraseña = async (req, res) => {
   const { id } = req.params;
 
@@ -74,6 +75,7 @@ exports.blanquearContraseña = async (req, res) => {
     res.status(500).json({ error: 'Error al blanquear contraseña' });
   }
 };
+
 
 exports.cambiarContraseña = (req, res) => {
   const { contraseñaActual, nuevaContraseña } = req.body;
