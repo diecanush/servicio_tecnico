@@ -6,6 +6,7 @@ import OficinasPanel from '../components/OficinasPanel';
 import DispositivosPanel from '../components/DispositivosPanel';
 import ServiciosPanel from '../components/ServiciosPanel';
 import UsuariosPanel from '../components/UsuariosPanel';
+import CambiarContraseña from '../components/CambiarContraseña';
 
 
 export default function Panel() {
@@ -33,6 +34,7 @@ export default function Panel() {
         <button onClick={() => setVista('dispositivos')}>Dispositivos</button>{' '}
         <button onClick={() => setVista('servicios')}>Servicios</button>{' '}
         <button onClick={() => setVista('usuarios')}>Usuarios</button>{' '}
+        <button onClick={() => setVista('cambiarPassword')}>Cambiar contraseña</button>{' '}
         {/* BOTON PARA CERRAR SESION */}
         <button onClick={cerrarSesion}>Cerrar sesión</button>
       </div>
@@ -43,6 +45,7 @@ export default function Panel() {
       {vista === 'dispositivos' && <DispositivosPanel />}
       {vista === 'servicios' && <ServiciosPanel />}
       {vista === 'usuarios' && <UsuariosPanel />}
+      {vista === 'cambiarPassword' && <CambiarContraseña />}
     </div>
   );
 }
