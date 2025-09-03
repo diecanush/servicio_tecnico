@@ -40,6 +40,7 @@ export default function UsuariosPanel() {
       setUsuarioSeleccionado(undefined);
       cargarUsuarios();
     } catch (err) {
+      console.error(err);
       alert('Error al guardar usuario');
     }
   };
@@ -52,7 +53,22 @@ export default function UsuariosPanel() {
       });
       cargarUsuarios();
     } catch (err) {
+      console.error(err);
       alert('Error al eliminar usuario');
+    }
+  };
+
+  const resetearPassword = async (id_usuario: number) => {
+    try {
+      const res = await axios.put(
+        `http://localhost:3000/usuarios/${id_usuario}/password`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert(`Contraseña temporal: ${res.data.password}`);
+    } catch (err) {
+      console.error(err);
+      alert('Error al resetear contraseña');
     }
   };
 
@@ -89,6 +105,10 @@ export default function UsuariosPanel() {
               </button>{' '}
               <button className="eliminar" onClick={() => eliminarUsuario(u.id_usuario)}>
                 Eliminar
+              </button>
+              {' '}
+              <button className="editar" onClick={() => resetearPassword(u.id_usuario)}>
+                Resetear contraseña
               </button>
             </div>
           </div>
