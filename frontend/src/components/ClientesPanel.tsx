@@ -1,6 +1,6 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth  } from '../context/AuthContext';
 import FormularioCliente from './FormularioCliente';
 import type { ClienteForm } from './FormularioCliente';
 
@@ -14,7 +14,7 @@ interface Cliente {
 }
 
 export default function ClientesPanel() {
-  const { token } = useContext(AuthContext);
+  const { token } = useAuth();
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [mostrarModal, setMostrarModal] = useState(false);
   const [clienteSeleccionado, setClienteSeleccionado] = useState<Cliente | null>(null);

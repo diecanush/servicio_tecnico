@@ -65,7 +65,8 @@ export default function UsuariosPanel() {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert(`Contraseña temporal: ${res.data.password}`);
+      console.log(res.data);
+      alert(`Contraseña temporal: ${res.data.contraseñaTemporal}`);
     } catch (err) {
       console.error(err);
       alert('Error al resetear contraseña');

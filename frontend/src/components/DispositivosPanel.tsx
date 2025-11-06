@@ -1,13 +1,13 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import FormularioDispositivo from './FormularioDispositivo';
 import type { Dispositivo, DispositivoForm, Oficina } from './FormularioDispositivo';
 
 
 
 export default function DispositivosPanel() {
-  const { token } = useContext(AuthContext);
+  const { token } = useAuth();
   const [dispositivos, setDispositivos] = useState<Dispositivo[]>([]);
   const [oficinas, setOficinas] = useState<Oficina[]>([]);
   const [mostrarModal, setMostrarModal] = useState(false);

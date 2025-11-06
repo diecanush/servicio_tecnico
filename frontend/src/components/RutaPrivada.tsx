@@ -1,9 +1,9 @@
-import { useContext, type JSX } from 'react';
+import { type JSX } from 'react';
 import { Navigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function RutaPrivada({ children }: { children: JSX.Element }) {
-  const { token } = useContext(AuthContext);
+  const { isAuthenticated } = useAuth();
 
-  return token ? children : <Navigate to="/" />;
+  return isAuthenticated ? children : <Navigate to="/" />;
 }

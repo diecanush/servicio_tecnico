@@ -1,6 +1,6 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import FormularioOficina from './FormularioOficina';
 import type { Oficina, OficinaForm } from './FormularioOficina';
 
@@ -11,7 +11,7 @@ interface Cliente {
 }
 
 export default function OficinasPanel() {
-  const { token } = useContext(AuthContext);
+  const { token } = useAuth();
   const [oficinas, setOficinas] = useState<Oficina[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [mostrarModal, setMostrarModal] = useState(false);
