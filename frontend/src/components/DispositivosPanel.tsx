@@ -7,11 +7,12 @@ import type { Dispositivo, DispositivoForm, Oficina } from './FormularioDisposit
 
 
 export default function DispositivosPanel() {
-  const { token } = useAuth();
+  const { token, can } = useAuth();
   const [dispositivos, setDispositivos] = useState<Dispositivo[]>([]);
   const [oficinas, setOficinas] = useState<Oficina[]>([]);
   const [mostrarModal, setMostrarModal] = useState(false);
   const [dispositivoSeleccionado, setDispositivoSeleccionado] = useState<Dispositivo | undefined>(undefined);
+  const puedeGestionarDispositivos = can?.('dispositivos_crud') ?? false;
 
   const cargarDatos = async () => {
     try {
@@ -41,6 +42,8 @@ export default function DispositivosPanel() {
 
   const guardarDispositivo = async (form: DispositivoForm) => {
     try {
+      if (!puedeGestionarDispositivos) return;
+
       if (dispositivoSeleccionado) {
         await axios.put(`http://localhost:3000/dispositivos/${dispositivoSeleccionado.id_dispositivo}`, form, {
           headers: { Authorization: `Bearer ${token}` },
@@ -59,6 +62,7 @@ export default function DispositivosPanel() {
   };
 
   const eliminarDispositivo = async (id_dispositivo: number) => {
+    if (!puedeGestionarDispositivos) return;
     if (!window.confirm('¿Eliminar este dispositivo?')) return;
     try {
       await axios.delete(`http://localhost:3000/dispositivos/${id_dispositivo}`, {
@@ -74,15 +78,17 @@ export default function DispositivosPanel() {
     <div style={{ padding: 20 }}>
       <h2>
         Dispositivos{' '}
-        <button
-          onClick={() => {
-            setDispositivoSeleccionado(undefined);
-            setMostrarModal(true);
-          }}
-          style={{ fontSize: '1.2rem' }}
-        >
-          ➕
-        </button>
+        {puedeGestionarDispositivos && (
+          <button
+            onClick={() => {
+              setDispositivoSeleccionado(undefined);
+              setMostrarModal(true);
+            }}
+            style={{ fontSize: '1.2rem' }}
+          >
+            ➕
+          </button>
+        )}
       </h2>
 
       <div className="cards-container">
@@ -91,25 +97,27 @@ export default function DispositivosPanel() {
             <h3>{disp.tipo} - {disp.marca} {disp.modelo}</h3>
             <p><strong>Ubicación:</strong> {obtenerOficina(disp.id_oficina)}</p>
             <p><strong>Estado:</strong> {disp.estado}</p>
-            <div style={{ marginTop: '10px' }}>
-              <button
-                className="editar"
-                onClick={() => {
-                  setDispositivoSeleccionado(disp);
-                  setMostrarModal(true);
-                }}
-              >
-                Editar
-              </button>{' '}
-              <button className="eliminar" onClick={() => eliminarDispositivo(disp.id_dispositivo)}>
-                Eliminar
-              </button>
-            </div>
+            {puedeGestionarDispositivos && (
+              <div style={{ marginTop: '10px' }}>
+                <button
+                  className="editar"
+                  onClick={() => {
+                    setDispositivoSeleccionado(disp);
+                    setMostrarModal(true);
+                  }}
+                >
+                  Editar
+                </button>{' '}
+                <button className="eliminar" onClick={() => eliminarDispositivo(disp.id_dispositivo)}>
+                  Eliminar
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>
 
-      {mostrarModal && (
+      {puedeGestionarDispositivos && mostrarModal && (
         <FormularioDispositivo
           dispositivoInicial={dispositivoSeleccionado}
           oficinas={oficinas}

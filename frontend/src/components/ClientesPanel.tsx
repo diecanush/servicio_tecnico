@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useAuth  } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import FormularioCliente from './FormularioCliente';
 import type { ClienteForm } from './FormularioCliente';
 
@@ -14,10 +14,11 @@ interface Cliente {
 }
 
 export default function ClientesPanel() {
-  const { token } = useAuth();
+  const { token, can } = useAuth();
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [mostrarModal, setMostrarModal] = useState(false);
   const [clienteSeleccionado, setClienteSeleccionado] = useState<Cliente | null>(null);
+  const puedeGestionarClientes = can?.('clientes_crud') ?? false;
 
   const obtenerClientes = async () => {
     try {
@@ -36,6 +37,8 @@ export default function ClientesPanel() {
 
   const guardarCliente = async (form: ClienteForm) => {
     try {
+      if (!puedeGestionarClientes) return;
+
       if (clienteSeleccionado) {
         await axios.put(`http://localhost:3000/clientes/${clienteSeleccionado.id_cliente}`, form, {
           headers: { Authorization: `Bearer ${token}` },
@@ -54,6 +57,7 @@ export default function ClientesPanel() {
   };
 
   const eliminarCliente = async (id_cliente: number) => {
+    if (!puedeGestionarClientes) return;
     const confirmar = window.confirm('¿Eliminar este cliente?');
     if (!confirmar) return;
     try {
@@ -70,15 +74,17 @@ export default function ClientesPanel() {
     <div style={{ padding: 20 }}>
       <h2>
         Clientes{' '}
-        <button
-          onClick={() => {
-            setClienteSeleccionado(null);
-            setMostrarModal(true);
-          }}
-          style={{ fontSize: '1.2rem' }}
-        >
-          ➕
-        </button>
+        {puedeGestionarClientes && (
+          <button
+            onClick={() => {
+              setClienteSeleccionado(null);
+              setMostrarModal(true);
+            }}
+            style={{ fontSize: '1.2rem' }}
+          >
+            ➕
+          </button>
+        )}
       </h2>
 
       <div className="cards-container">
@@ -88,28 +94,30 @@ export default function ClientesPanel() {
             <p><strong>CUIT:</strong> {cliente.cuit}</p>
             <p><strong>Contacto:</strong> {cliente.contacto}</p>
             <p><strong>Email:</strong> {cliente.email}</p>
-            <div style={{ marginTop: '10px' }}>
-              <button
-                className="editar"
-                onClick={() => {
-                  setClienteSeleccionado(cliente);
-                  setMostrarModal(true);
-                }}
-              >
-                Editar
-              </button>{' '}
-              <button
-                className="eliminar"
-                onClick={() => eliminarCliente(cliente.id_cliente)}
-              >
-                Eliminar
-              </button>
-            </div>
+            {puedeGestionarClientes && (
+              <div style={{ marginTop: '10px' }}>
+                <button
+                  className="editar"
+                  onClick={() => {
+                    setClienteSeleccionado(cliente);
+                    setMostrarModal(true);
+                  }}
+                >
+                  Editar
+                </button>{' '}
+                <button
+                  className="eliminar"
+                  onClick={() => eliminarCliente(cliente.id_cliente)}
+                >
+                  Eliminar
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>
 
-      {mostrarModal && (
+      {puedeGestionarClientes && mostrarModal && (
         <FormularioCliente
           clienteInicial={clienteSeleccionado ?? undefined}
           onGuardar={guardarCliente}

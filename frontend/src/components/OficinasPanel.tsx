@@ -11,11 +11,12 @@ interface Cliente {
 }
 
 export default function OficinasPanel() {
-  const { token } = useAuth();
+  const { token, can } = useAuth();
   const [oficinas, setOficinas] = useState<Oficina[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [mostrarModal, setMostrarModal] = useState(false);
   const [oficinaSeleccionada, setOficinaSeleccionada] = useState<Oficina | undefined>(undefined);
+  const puedeGestionarOficinas = can?.('oficinas_crud') ?? false;
 
   const cargarDatos = async () => {
     try {
@@ -45,6 +46,8 @@ export default function OficinasPanel() {
 
   const guardarOficina = async (form: OficinaForm) => {
     try {
+      if (!puedeGestionarOficinas) return;
+
       if (oficinaSeleccionada) {
         await axios.put(`http://localhost:3000/oficinas/${oficinaSeleccionada.id_oficina}`, form, {
           headers: { Authorization: `Bearer ${token}` },
@@ -63,6 +66,7 @@ export default function OficinasPanel() {
   };
 
   const eliminarOficina = async (id_oficina: number) => {
+    if (!puedeGestionarOficinas) return;
     if (!window.confirm('¿Eliminar esta oficina?')) return;
     try {
       await axios.delete(`http://localhost:3000/oficinas/${id_oficina}`, {
@@ -78,15 +82,17 @@ export default function OficinasPanel() {
     <div style={{ padding: 20 }}>
       <h2>
         Oficinas{' '}
-        <button
-          onClick={() => {
-            setOficinaSeleccionada(undefined);
-            setMostrarModal(true);
-          }}
-          style={{ fontSize: '1.2rem' }}
-        >
-          ➕
-        </button>
+        {puedeGestionarOficinas && (
+          <button
+            onClick={() => {
+              setOficinaSeleccionada(undefined);
+              setMostrarModal(true);
+            }}
+            style={{ fontSize: '1.2rem' }}
+          >
+            ➕
+          </button>
+        )}
       </h2>
 
       <div className="cards-container">
@@ -95,25 +101,27 @@ export default function OficinasPanel() {
             <h3>{obtenerNombreCliente(of.id_cliente)}</h3>
             <p><strong>Dirección:</strong> {of.direccion}</p>
             <p><strong>Ciudad:</strong> {of.ciudad}</p>
-            <div style={{ marginTop: '10px' }}>
-              <button
-                className="editar"
-                onClick={() => {
-                  setOficinaSeleccionada(of);
-                  setMostrarModal(true);
-                }}
-              >
-                Editar
-              </button>{' '}
-              <button className="eliminar" onClick={() => eliminarOficina(of.id_oficina)}>
-                Eliminar
-              </button>
-            </div>
+            {puedeGestionarOficinas && (
+              <div style={{ marginTop: '10px' }}>
+                <button
+                  className="editar"
+                  onClick={() => {
+                    setOficinaSeleccionada(of);
+                    setMostrarModal(true);
+                  }}
+                >
+                  Editar
+                </button>{' '}
+                <button className="eliminar" onClick={() => eliminarOficina(of.id_oficina)}>
+                  Eliminar
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>
 
-      {mostrarModal && (
+      {puedeGestionarOficinas && mostrarModal && (
         <FormularioOficina
           oficinaInicial={oficinaSeleccionada}
           clientes={clientes}
