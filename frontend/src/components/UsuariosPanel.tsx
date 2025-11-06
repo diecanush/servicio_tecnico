@@ -1,14 +1,15 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import FormularioUsuario from './FormularioUsuario';
 import type { Usuario, UsuarioForm } from './FormularioUsuario';
 
 export default function UsuariosPanel() {
-  const { token } = useContext(AuthContext);
+  const { token, can } = useAuth();
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [mostrarModal, setMostrarModal] = useState(false);
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<Usuario | undefined>(undefined);
+  const puedeGestionarUsuarios = can?.('usuarios_crud') ?? false;
 
   const cargarUsuarios = async () => {
     try {
@@ -27,6 +28,8 @@ export default function UsuariosPanel() {
 
   const guardarUsuario = async (form: UsuarioForm) => {
     try {
+      if (!puedeGestionarUsuarios) return;
+
       if (usuarioSeleccionado) {
         await axios.put(`http://localhost:3000/usuarios/${usuarioSeleccionado.id_usuario}`, form, {
           headers: { Authorization: `Bearer ${token}` },
@@ -46,6 +49,7 @@ export default function UsuariosPanel() {
   };
 
   const eliminarUsuario = async (id_usuario: number) => {
+    if (!puedeGestionarUsuarios) return;
     if (!window.confirm('¿Eliminar este usuario?')) return;
     try {
       await axios.delete(`http://localhost:3000/usuarios/${id_usuario}`, {
@@ -59,6 +63,7 @@ export default function UsuariosPanel() {
   };
 
   const resetearPassword = async (id_usuario: number) => {
+    if (!puedeGestionarUsuarios) return;
     try {
       const res = await axios.put(
         `http://localhost:3000/usuarios/${id_usuario}/password`,
@@ -77,15 +82,17 @@ export default function UsuariosPanel() {
     <div style={{ padding: 20 }}>
       <h2>
         Usuarios{' '}
-        <button
-          onClick={() => {
-            setUsuarioSeleccionado(undefined);
-            setMostrarModal(true);
-          }}
-          style={{ fontSize: '1.2rem' }}
-        >
-          ➕
-        </button>
+        {puedeGestionarUsuarios && (
+          <button
+            onClick={() => {
+              setUsuarioSeleccionado(undefined);
+              setMostrarModal(true);
+            }}
+            style={{ fontSize: '1.2rem' }}
+          >
+            ➕
+          </button>
+        )}
       </h2>
 
       <div className="cards-container">
@@ -94,29 +101,31 @@ export default function UsuariosPanel() {
             <h3>{u.nombre}</h3>
             <p><strong>Email:</strong> {u.email}</p>
             <p><strong>Rol:</strong> {u.rol}</p>
-            <div style={{ marginTop: '10px' }}>
-              <button
-                className="editar"
-                onClick={() => {
-                  setUsuarioSeleccionado(u);
-                  setMostrarModal(true);
-                }}
-              >
-                Editar
-              </button>{' '}
-              <button className="eliminar" onClick={() => eliminarUsuario(u.id_usuario)}>
-                Eliminar
-              </button>
-              {' '}
-              <button className="editar" onClick={() => resetearPassword(u.id_usuario)}>
-                Resetear contraseña
-              </button>
-            </div>
+            {puedeGestionarUsuarios && (
+              <div style={{ marginTop: '10px' }}>
+                <button
+                  className="editar"
+                  onClick={() => {
+                    setUsuarioSeleccionado(u);
+                    setMostrarModal(true);
+                  }}
+                >
+                  Editar
+                </button>{' '}
+                <button className="eliminar" onClick={() => eliminarUsuario(u.id_usuario)}>
+                  Eliminar
+                </button>
+                {' '}
+                <button className="editar" onClick={() => resetearPassword(u.id_usuario)}>
+                  Resetear contraseña
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>
 
-      {mostrarModal && (
+      {puedeGestionarUsuarios && mostrarModal && (
         <FormularioUsuario
           usuarioInicial={usuarioSeleccionado}
           onGuardar={guardarUsuario}

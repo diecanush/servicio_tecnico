@@ -1,23 +1,29 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import FormularioServicio from './FormularioServicio';
 import type { Servicio, ServicioForm, Dispositivo, Usuario } from './FormularioServicio';
 
 export default function ServiciosPanel() {
-  const { token } = useContext(AuthContext);
+  const { token, can } = useAuth();
   const [servicios, setServicios] = useState<Servicio[]>([]);
   const [dispositivos, setDispositivos] = useState<Dispositivo[]>([]);
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [mostrarModal, setMostrarModal] = useState(false);
   const [servicioSeleccionado, setServicioSeleccionado] = useState<Servicio | undefined>(undefined);
 
+  const puedeGestionarServicios = useMemo(() => can?.('servicios_crud') ?? false, [can]);
+
   const cargarDatos = async () => {
     try {
       const [servRes, dispRes, userRes] = await Promise.all([
         axios.get('http://localhost:3000/servicios', { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get('http://localhost:3000/dispositivos', { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get('http://localhost:3000/usuarios', { headers: { Authorization: `Bearer ${token}` } }),
+        axios
+          .get('http://localhost:3000/dispositivos', { headers: { Authorization: `Bearer ${token}` } })
+          .catch(() => ({ data: [] as Dispositivo[] })),
+        axios
+          .get('http://localhost:3000/usuarios', { headers: { Authorization: `Bearer ${token}` } })
+          .catch(() => ({ data: [] as Usuario[] })),
       ]);
       setServicios(servRes.data);
       setDispositivos(dispRes.data);
@@ -43,6 +49,8 @@ export default function ServiciosPanel() {
 
   const guardarServicio = async (form: ServicioForm) => {
     try {
+      if (!puedeGestionarServicios) return;
+
       if (servicioSeleccionado) {
         await axios.put(`http://localhost:3000/servicios/${servicioSeleccionado.id_servicio}`, form, {
           headers: { Authorization: `Bearer ${token}` },
@@ -61,6 +69,7 @@ export default function ServiciosPanel() {
   };
 
   const eliminarServicio = async (id: number) => {
+    if (!puedeGestionarServicios) return;
     if (!window.confirm('¿Eliminar este servicio?')) return;
     try {
       await axios.delete(`http://localhost:3000/servicios/${id}`, {
@@ -76,15 +85,17 @@ export default function ServiciosPanel() {
     <div style={{ padding: 20 }}>
       <h2>
         Servicios{' '}
-        <button
-          onClick={() => {
-            setServicioSeleccionado(undefined);
-            setMostrarModal(true);
-          }}
-          style={{ fontSize: '1.2rem' }}
-        >
-          ➕
-        </button>
+        {puedeGestionarServicios && (
+          <button
+            onClick={() => {
+              setServicioSeleccionado(undefined);
+              setMostrarModal(true);
+            }}
+            style={{ fontSize: '1.2rem' }}
+          >
+            ➕
+          </button>
+        )}
       </h2>
 
       <div className="cards-container">
@@ -95,28 +106,30 @@ export default function ServiciosPanel() {
             <p><strong>Dispositivo:</strong> {obtenerDispositivo(s.id_dispositivo)}</p>
             <p><strong>Técnico:</strong> {obtenerUsuario(s.id_usuario)}</p>
             <p><strong>Descripción:</strong> {s.descripcion}</p>
-            <div style={{ marginTop: '10px' }}>
-              <button
-                className="editar"
-                onClick={() => {
-                  setServicioSeleccionado(s);
-                  setMostrarModal(true);
-                }}
-              >
-                Editar
-              </button>{' '}
-              <button
-                className="eliminar"
-                onClick={() => eliminarServicio(s.id_servicio)}
-              >
-                Eliminar
-              </button>
-            </div>
+            {puedeGestionarServicios && (
+              <div style={{ marginTop: '10px' }}>
+                <button
+                  className="editar"
+                  onClick={() => {
+                    setServicioSeleccionado(s);
+                    setMostrarModal(true);
+                  }}
+                >
+                  Editar
+                </button>{' '}
+                <button
+                  className="eliminar"
+                  onClick={() => eliminarServicio(s.id_servicio)}
+                >
+                  Eliminar
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>
 
-      {mostrarModal && (
+      {puedeGestionarServicios && mostrarModal && (
         <FormularioServicio
           servicioInicial={servicioSeleccionado}
           dispositivos={dispositivos}

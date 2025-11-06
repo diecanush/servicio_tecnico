@@ -14,6 +14,13 @@ export default function Panel() {
   const navigate = useNavigate();
   const [vista, setVista] = useState<string>('');
 
+  const puedeVerClientes = can?.('clientes_ver');
+  const puedeVerOficinas = can?.('oficinas_ver');
+  const puedeVerDispositivos = can?.('dispositivos_ver');
+  const puedeVerServicios = can?.('servicios_ver') || can?.('servicios_mios_ver');
+  const puedeVerUsuarios = can?.('usuarios_ver');
+  const puedeCambiarPassword = can?.('cambiar_contraseña');
+
   const cerrarSesion = () => {
     const confirmar = window.confirm('¿Estás seguro de que querés cerrar sesión?');
     if (confirmar) {
@@ -30,27 +37,29 @@ export default function Panel() {
       <div className='panel-header'>
         {/* 🔒 botones visibles solo si el usuario tiene permiso de VER */}
 
-        {can?.('clientes_ver') && (
+        {puedeVerClientes && (
           <button onClick={() => setVista('clientes')}>Clientes</button>
         )}{' '}
 
-        {can?.('oficinas_ver') && (
+        {puedeVerOficinas && (
           <button onClick={() => setVista('oficinas')}>Oficinas</button>
         )}{' '}
 
-        {can?.('dispositivos_ver') && (
+        {puedeVerDispositivos && (
           <button onClick={() => setVista('dispositivos')}>Dispositivos</button>
         )}{' '}
 
-        {can?.('servicios_ver') && (
-          <button onClick={() => setVista('servicios')}>Servicios</button>
+        {puedeVerServicios && (
+          <button onClick={() => setVista('servicios')}>
+            {can?.('servicios_ver') ? 'Servicios' : 'Mis servicios'}
+          </button>
         )}{' '}
 
-        {can?.('usuarios_ver') && (
+        {puedeVerUsuarios && (
           <button onClick={() => setVista('usuarios')}>Usuarios</button>
         )}{' '}
 
-        {can?.('cambiar_contraseña') && (
+        {puedeCambiarPassword && (
           <button onClick={() => setVista('cambiarPassword')}>
             Cambiar contraseña
           </button>
@@ -60,12 +69,12 @@ export default function Panel() {
       </div>
 
       {/* 🔒 Mostrar el componente solo si también tiene permiso */}
-      {vista === 'clientes' && can?.('clientes_ver') && <ClientesPanel />}
-      {vista === 'oficinas' && can?.('oficinas_ver') && <OficinasPanel />}
-      {vista === 'dispositivos' && can?.('dispositivos_ver') && <DispositivosPanel />}
-      {vista === 'servicios' && can?.('servicios_ver') && <ServiciosPanel />}
-      {vista === 'usuarios' && can?.('usuarios_ver') && <UsuariosPanel />}
-      {vista === 'cambiarPassword' && can?.('cambiar_contraseña') && <CambiarContraseña />}
+      {vista === 'clientes' && puedeVerClientes && <ClientesPanel />}
+      {vista === 'oficinas' && puedeVerOficinas && <OficinasPanel />}
+      {vista === 'dispositivos' && puedeVerDispositivos && <DispositivosPanel />}
+      {vista === 'servicios' && puedeVerServicios && <ServiciosPanel />}
+      {vista === 'usuarios' && puedeVerUsuarios && <UsuariosPanel />}
+      {vista === 'cambiarPassword' && puedeCambiarPassword && <CambiarContraseña />}
     </div>
   );
 }
