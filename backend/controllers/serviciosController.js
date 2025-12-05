@@ -2,7 +2,15 @@ const db = require('../config/db');
 
 // GET /servicios
 exports.listarServicios = (req, res) => {
-  db.query('SELECT * FROM servicios', (err, resultados) => {
+  const { rol, id } = req.usuario || {};
+
+  // Los técnicos solo ven los servicios asignados a ellos; admin ve todo
+  const sql = rol === 'tecnico'
+    ? 'SELECT * FROM servicios WHERE id_usuario = ?'
+    : 'SELECT * FROM servicios';
+  const params = rol === 'tecnico' ? [id] : [];
+
+  db.query(sql, params, (err, resultados) => {
     if (err) return res.status(500).json({ error: 'Error al listar servicios' });
     res.json(resultados);
   });
